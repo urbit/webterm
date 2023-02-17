@@ -1,6 +1,6 @@
 import { Terminal } from 'xterm';
 import { saveAs } from 'file-saver';
-import { Blit, Stub, Stye } from '@urbit/api/term';
+import { Blit, Stub, Stye } from '@urbit/api';
 import { stye } from '../lib/stye';
 
 export const csi = (cmd: string, ...args: number[]) => {

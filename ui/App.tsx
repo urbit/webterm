@@ -12,7 +12,7 @@ import 'xterm/css/xterm.css';
 
 import {
   scrySessions
-} from '@urbit/api/term';
+} from '@urbit/api';
 
 import { ThemeProvider } from 'styled-components';
 import { Tabs } from './Tabs';

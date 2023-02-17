@@ -1,4 +1,4 @@
-import { Deco, Stye, Tint } from '@urbit/api/term';
+import { Deco, Stye, Tint } from '@urbit/api';
 
 const tint = (t: Tint) => {
   switch (t) {

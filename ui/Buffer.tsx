@@ -6,7 +6,7 @@ import api from './api';
 
 import {
   Belt, pokeTask, pokeBelt
-} from '@urbit/api/term';
+} from '@urbit/api';
 import { Session } from './state';
 import { useCallback, useEffect, useRef } from 'react';
 import useTermState from './state';
