@@ -11,13 +11,14 @@ import { _dark, _light } from '@tlon/indigo-react';
 import 'xterm/css/xterm.css';
 
 import {
-  scrySessions
+  scrySessions,
+  pokeTask
 } from '@urbit/api';
 
 import { ThemeProvider } from 'styled-components';
 import { Tabs } from './Tabs';
 import Buffer from './Buffer';
-import { DEFAULT_SESSION } from './constants';
+import { DEFAULT_SESSION, SESSION_ID_REGEX } from './constants';
 import { showSlog } from './lib/blit';
 import { InfoButton } from './InfoButton';
 
@@ -27,6 +28,37 @@ const initSessions = async () => {
   useTermState.getState().set((state) => {
     state.names = response.sort();
   });
+
+  //  if there is a query parameters called 'into',
+  //  select that session, creating it if necessary
+  //
+  let match = RegExp('[?&]into=([^&]*)').exec(window.location.search);
+  let agent = match && decodeURIComponent(match[1].replace(/\+/g, ' '));
+  if ( agent && SESSION_ID_REGEX.test(agent) ) {
+    let session: string = agent;
+    //  the session already exists, so we can simply select it
+    //
+    if ( response.indexOf(agent) > -1 ) {
+      useTermState.getState().set((state) => {
+        state.selected = session;
+      });
+    }
+    //  the session does not yet exist, so we create it,
+    //  and connect it to the agent with the same name
+    //
+    else {
+      try {
+        await api.poke(pokeTask(session, { open: { term: agent, apps: [] } }));
+        useTermState.getState().set((state) => {
+          state.names = [session, ...state.names].sort();
+          state.selected = session;
+          state.sessions[session] = null;
+        });
+      } catch (error) {
+        console.log('unable to create session:', error);
+      }
+    }
+  }
 };
 
 export default function TermApp() {
