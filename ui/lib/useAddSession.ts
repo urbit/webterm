@@ -5,7 +5,7 @@ import {
 } from '../constants';
 import useTermState from '../state';
 import api from '../api';
-import { pokeTask } from '@urbit/api';
+import { pokeTask } from './utils';
 import { useCallback } from 'react';
 
 export const useAddSession = () => {
