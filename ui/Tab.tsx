@@ -1,8 +1,8 @@
 import { DEFAULT_SESSION } from './constants';
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback } from 'react';
 import useTermState, { Session } from './state';
 import api from './api';
-import { pokeTask } from '@urbit/api';
+import { pokeTask } from './lib/utils';
 import { DelayedSpinner as Spinner } from './Spinner';
 
 interface TabProps {
