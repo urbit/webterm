@@ -10,17 +10,13 @@ import { _dark, _light } from '@tlon/indigo-react';
 
 import 'xterm/css/xterm.css';
 
-import {
-  scrySessions,
-  pokeTask
-} from '@urbit/api';
-
 import { ThemeProvider } from 'styled-components';
 import { Tabs } from './Tabs';
 import Buffer from './Buffer';
 import { DEFAULT_SESSION, SESSION_ID_REGEX } from './constants';
 import { showSlog } from './lib/blit';
 import { InfoButton } from './InfoButton';
+import { scrySessions, pokeTask } from './lib/utils';
 
 const initSessions = async () => {
   const response = await api.scry(scrySessions());

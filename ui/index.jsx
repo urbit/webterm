@@ -1,7 +1,7 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import TermApp from './App';
-import { preSig } from '@urbit/api';
+import { preSig } from '@urbit/aura';
 import cookies from 'browser-cookies';
 
 function authRedirect() {

@@ -5,8 +5,8 @@ import bel from './lib/bel';
 import api from './api';
 
 import {
-  Belt, pokeTask, pokeBelt
-} from '@urbit/api';
+  pokeTask, pokeBelt
+} from './lib/utils'
 import { Session } from './state';
 import { useCallback, useEffect, useRef } from 'react';
 import useTermState from './state';
@@ -16,6 +16,7 @@ import { makeTheme } from './lib/theme';
 import { showBlit, csi, hasBell } from './lib/blit';
 import { DEFAULT_SESSION, RESIZE_DEBOUNCE_MS, RESIZE_THRESHOLD_PX } from './constants';
 import { retry } from './lib/retry';
+import { Belt } from 'lib/types';
 
 const termConfig: ITerminalOptions = {
   logLevel: 'warn',

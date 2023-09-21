@@ -1,7 +1,7 @@
+import { produce } from 'immer';
 import { Terminal } from 'xterm';
 import { FitAddon } from 'xterm-addon-fit';
 import create from 'zustand';
-import produce from 'immer';
 
 export type Session = {
   term: Terminal,
