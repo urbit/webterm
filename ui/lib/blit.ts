@@ -7,11 +7,11 @@ export const csi = (cmd: string, ...args: number[]) => {
   return '\x1b[' + args.join(';') + cmd;
 };
 
-export const showBlit = (term: Terminal, blit: Blit) => {
+export const showBlit = (term: Terminal, blit: Blit, handleTerminalUpdate: Function) => {
   let out = '';
 
   if ('mor' in blit) {
-    return blit.mor.map(b => showBlit(term, b));
+    return blit.mor.map(b => showBlit(term, b, handleTerminalUpdate));
   } else if ('bel' in blit) {
     out += '\x07';
   } else if ('clr' in blit) {
@@ -48,12 +48,12 @@ export const showBlit = (term: Terminal, blit: Blit) => {
   } else if ('wyp' in blit) {
     out += '\r' + csi('K');
     out += csi('u');
-  //
+    //
   } else {
     console.log('weird blit', blit);
   }
 
-  term.write(out);
+  handleTerminalUpdate(term, out);
 };
 
 export const showSlog = (term: Terminal, slog: string) => {
@@ -62,16 +62,19 @@ export const showSlog = (term: Terminal, slog: string) => {
   //  print a newline to move everything up a line,
   //  set text to grey,
   //  print the slog,
-  //  restore color, scroll region, and cursor.
+  //  restore color, scroll region, and cursor,
+  //  keep the cursor at the bottom after slog.
   //
   term.write(csi('r', 1, term.rows - 1)
-           + csi('H', term.rows - 1, 1)
-           + '\n'
-           + csi('m', 90)
-           + slog
-           + csi('m', 0)
-           + csi('r')
-           + csi('u'));
+    + csi('H', term.rows - 1, 1)
+    + '\n'
+    + csi('m', 90)
+    + slog
+    + csi('m', 0)
+    + csi('r')
+    + csi('u')
+    // @ts-ignore
+    + csi('H', term.rows, term._core.buffer.x + 1));
 };
 
 export const hasBell = (blit: Blit) => {
@@ -95,31 +98,33 @@ const blitToBlot = (blit: Blit): Blit => {
   } else if ('put' in blit) {
     return { klr: [{ text: blit.put, stye: blotStye }] };
   } else if ('klr' in blit) {
-    return { klr: blit.klr.map((s: Stub) => {
-      return { text: s.text, stye: blotStye };
-    }) };
+    return {
+      klr: blit.klr.map((s: Stub) => {
+        return { text: s.text, stye: blotStye };
+      })
+    };
   } else {
     return blit;
   }
 };
 
-const queue: {term: Terminal, blit: Blit}[] = [];
-const renderFromQueue = () => {
+const queue: { term: Terminal, blit: Blit }[] = [];
+const renderFromQueue = (handleTerminalUpdate: Function) => {
   const next = queue.shift();
   if (!next) {
     return;
   }
-  showBlit(next.term, next.blit);
+  showBlit(next.term, next.blit, handleTerminalUpdate);
   if (0 === queue.length) {
     return;
   }
   setTimeout(renderFromQueue, 200);
 };
 
-export const showBlitDebug = (term: Terminal, blit: Blit) => {
+export const showBlitDebug = (term: Terminal, blit: Blit, handleTerminalUpdate: Function) => {
   const blot = blitToBlot(blit);
   if (0 === queue.length) {
-    showBlit(term, blot);
+    showBlit(term, blot, handleTerminalUpdate);
     queue.push({ term, blit });
     setTimeout(renderFromQueue, 200);
   } else {
