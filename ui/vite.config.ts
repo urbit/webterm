@@ -5,7 +5,6 @@ import reactRefresh from '@vitejs/plugin-react-refresh';
 import analyze from 'rollup-plugin-analyzer';
 import { visualizer } from 'rollup-plugin-visualizer';
 import { urbitPlugin } from '@urbit/vite-plugin-urbit';
-import pluginRewriteAll from 'vite-plugin-rewrite-all';
 import { fileURLToPath } from 'url';
 
 // https://vitejs.dev/config/
@@ -31,13 +30,21 @@ export default ({ mode }: { mode: string }) => {
   ];
 
   return defineConfig({
+    server: {
+      fs: {
+        // Allow serving files from one level up to the project root
+        allow: ['../../'],
+      },
+    },
     base: '/apps/webterm',
     build:
       mode !== 'profile'
         ? {
+            target: "es2020",
             sourcemap: false,
           }
         : ({
+            target: "es2020",
             rollupOptions: {
               plugins: [
                 analyze({
@@ -48,6 +55,9 @@ export default ({ mode }: { mode: string }) => {
             },
           } as BuildOptions),
     plugins: plugins,
+    optimizeDeps: {
+      esbuildOptions: { target: "es2020", supported: { bigint: true } },
+    },
     resolve: {
       alias: {
         '@': fileURLToPath(new URL('./src', import.meta.url)),

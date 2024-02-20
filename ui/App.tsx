@@ -20,9 +20,10 @@ import { scrySessions, pokeTask } from './lib/utils';
 
 const initSessions = async () => {
   const response = await api.scry(scrySessions());
+  const names = await (new Response(response as ReadableStream).json()) as string[];
 
   useTermState.getState().set((state) => {
-    state.names = response.sort();
+    state.names = names;
   });
 
   //  if there is a query parameters called 'into',
@@ -34,7 +35,7 @@ const initSessions = async () => {
     let session: string = agent;
     //  the session already exists, so we can simply select it
     //
-    if ( response.indexOf(agent) > -1 ) {
+    if ( names.indexOf(agent) > -1 ) {
       useTermState.getState().set((state) => {
         state.selected = session;
       });
