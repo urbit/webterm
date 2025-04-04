@@ -29,12 +29,8 @@
       }
 
       .buffer-container {
-        height: calc(100% - 40px - 24px); /* Subtract header height and spin-info-bar height */
+        height: calc(100% - 40px);
         position: relative;
-      }
-
-      .spin-info-bar {
-        width: 100%;
       }
 
       .terminal-container {
