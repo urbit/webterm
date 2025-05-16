@@ -16,29 +16,18 @@ export const SpinInfoBar = () => {
     };
 
     spin.onmessage = (e) => {
-      console.log('spin message:', e.data);
       // The data is expected to be a path like /stack3/stack2/stack1/stack0
       // We need to parse it into an array of stack names
       if (e.data && typeof e.data === 'string') {
         // Remove leading slash if present and split by slash
-        const stackPath = e.data.startsWith('/') ? e.data.substring(1) : e.data;
-        const stackArray = stackPath.split('/').filter(Boolean);
+        const stackPath = e.data.substring(1);
+        const stackArray = stackPath.split('/');
         setSpinStack(stackArray);
       }
     };
 
     spin.onerror = (e) => {
       console.error('spin: eventsource error:', e);
-      if (available) {
-        window.setTimeout(() => {
-          if (spin.readyState !== EventSource.CLOSED) {
-            return;
-          }
-          console.log('spin: reconnecting...');
-          // We would call the setup function again here, but we don't want to
-          // create multiple event listeners in this effect
-        }, 10000);
-      }
     };
 
     return () => {
