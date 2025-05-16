@@ -23,14 +23,18 @@
     <link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro&display=swap" rel="stylesheet">
     <style>
       body, #root {
-        height: 99vh; /* prevent scrollbar on outer frame */
+        height: 97vh; /* prevent scrollbar on outer frame */
         margin: 0;
         padding: 0;
       }
 
       .buffer-container {
-        height: calc(100% - 40px);
+        height: calc(100% - 40px - 1em);
         position: relative;
+      }
+
+      .spin-info-bar {
+        width: 98%;
       }
 
       .terminal-container {

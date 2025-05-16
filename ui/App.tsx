@@ -16,6 +16,7 @@ import Buffer from './Buffer';
 import { DEFAULT_SESSION, SESSION_ID_REGEX } from './constants';
 import { showSlog } from './lib/blit';
 import { InfoButton } from './InfoButton';
+import { SpinInfoBar } from './SpinInfoBar';
 import { scrySessions, pokeTask } from './lib/utils';
 
 const initSessions = async () => {
@@ -107,6 +108,7 @@ export default function TermApp() {
   return (
     <>
       <ThemeProvider theme={dark ? _dark : _light}>
+        <SpinInfoBar />
         <div className="header">
           <Tabs />
           <InfoButton />
