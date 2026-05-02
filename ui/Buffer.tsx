@@ -1,8 +1,11 @@
-import { Terminal, ITerminalOptions } from 'xterm';
+import { Terminal, ITerminalOptions, ITerminalInitOnlyOptions } from 'xterm';
 import { FitAddon } from 'xterm-addon-fit';
+import { CanvasAddon } from 'xterm-addon-canvas';
 import { debounce } from 'lodash';
 import bel from './lib/bel';
 import api from './api';
+
+const belAudio = new Audio(bel);
 
 import {
   pokeTask, pokeBelt
@@ -18,7 +21,7 @@ import { DEFAULT_SESSION, RESIZE_DEBOUNCE_MS, RESIZE_THRESHOLD_PX } from './cons
 import { retry } from './lib/retry';
 import { Belt } from 'lib/types';
 
-const termConfig: ITerminalOptions = {
+const termConfig: ITerminalOptions & ITerminalInitOnlyOptions = {
   logLevel: 'warn',
   //
   convertEol: true,
@@ -28,11 +31,9 @@ const termConfig: ITerminalOptions = {
   scrollback: 10000,
   //
   fontFamily: '"Source Code Pro", "Roboto mono", "Courier New", monospace',
+  fontSize: 16,
   fontWeight: 400,
   // NOTE  theme colors configured dynamically
-  //
-  bellStyle: 'sound',
-  bellSound: bel,
   //
   //  allows text selection by holding modifier (option, or shift)
   macOptionClickForcesSelection: true,
@@ -178,12 +179,18 @@ export default function Buffer({ name, selected, dark }: BufferProps) {
     term.options.theme = makeTheme(dark);
     const fit = new FitAddon();
     term.loadAddon(fit);
+    try {
+      term.loadAddon(new CanvasAddon());
+    } catch (e) {
+      console.warn('canvas renderer unavailable, falling back to DOM', e);
+    }
     fit.fit();
     term.focus();
 
-    //  start mouse reporting
-    //
-    term.write(csi('?9h'));
+    //  NOTE  X10 mouse reporting (csi('?9h')) used to be enabled here
+    //        unconditionally, but it makes xterm intercept clicks/drags so
+    //        native selection can't initiate. dojo can re-enable it itself
+    //        via blit if it ever wants click events.
 
     const ses: Session = {
       term,
@@ -211,6 +218,7 @@ export default function Buffer({ name, selected, dark }: BufferProps) {
     });
     term.onData(e => onInput(name, ses, e));
     term.onBinary(e => onInput(name, ses, e));
+    term.onBell(() => { belAudio.play().catch(() => {}); });
 
     //  open subscription
     //
@@ -291,6 +299,25 @@ export default function Buffer({ name, selected, dark }: BufferProps) {
     }
   }, [session, containerRef]);
 
+  //  on touch devices, auto-copy whenever xterm's own selection changes
+  //  (e.g. via double-tap word select) so you can paste elsewhere.
+  //
+  useEffect(() => {
+    if (!session) {
+      return;
+    }
+    if (!window.matchMedia('(pointer: coarse)').matches) {
+      return;
+    }
+    const sub = session.term.onSelectionChange(() => {
+      const sel = session.term.getSelection();
+      if (sel && navigator.clipboard?.writeText) {
+        navigator.clipboard.writeText(sel).catch(() => {});
+      }
+    });
+    return () => sub.dispose();
+  }, [session]);
+
   //  initialize resize listeners
   //
   useEffect(() => {
@@ -301,9 +328,11 @@ export default function Buffer({ name, selected, dark }: BufferProps) {
     // TODO: use ResizeObserver for improved performance?
     const debouncedResize =  debounce(() => onResize(name, session), RESIZE_DEBOUNCE_MS);
     window.addEventListener('resize', debouncedResize);
+    window.visualViewport?.addEventListener('resize', debouncedResize);
 
     return () => {
       window.removeEventListener('resize', debouncedResize);
+      window.visualViewport?.removeEventListener('resize', debouncedResize);
     };
   }, [session]);
 
