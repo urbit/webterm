@@ -31,7 +31,7 @@ const useTermState = create<TermState>((set, get) => ({
   theme: 'auto',
   // eslint-disable-next-line no-unused-vars
   set: (f: (draft: TermState) => void) => {
-    set(produce(f));
+    set(produce(f) as any);
   }
 } as TermState));
 

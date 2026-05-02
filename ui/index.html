@@ -4,7 +4,7 @@
     <title>Terminal</title>
     <meta charset="utf-8" />
     <meta name="viewport"
-      content="width=device-width, initial-scale=1, shrink-to-fit=no,maximum-scale=1"/>
+      content="width=device-width, initial-scale=1, shrink-to-fit=no, maximum-scale=1, interactive-widget=resizes-content"/>
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-touch-fullscreen" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
@@ -22,10 +22,20 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro&display=swap" rel="stylesheet">
     <style>
+      html {
+        height: 100%;
+        overflow: hidden;
+      }
+
       body, #root {
-        height: 99vh; /* prevent scrollbar on outer frame */
+        position: fixed;
+        inset: 0;
+        height: 100vh;
+        height: 100dvh;
+        height: var(--app-height, 100dvh); /* tracks visualViewport so soft keyboard pushes content up */
         margin: 0;
         padding: 0;
+        overflow: hidden;
       }
 
       .buffer-container {
@@ -98,6 +108,20 @@
         cursor: pointer;
       }
 
+      .xterm-viewport {
+        -webkit-overflow-scrolling: touch;
+        touch-action: pan-y;
+      }
+
+      /* allow native text selection (long-press on touch, click-drag on desktop) */
+      .xterm-screen,
+      .xterm-screen .xterm-rows,
+      .xterm-screen .xterm-rows * {
+        -webkit-user-select: text !important;
+        user-select: text !important;
+        -webkit-touch-callout: default !important;
+      }
+
       @media (prefers-color-scheme: dark) {
         html {
           background-color: rgb(26,26,26);
@@ -131,6 +155,23 @@
         }
       }
     </style>
+    <script>
+      // Track visualViewport so the soft keyboard shrinks the layout
+      // instead of overlapping the terminal.
+      (function () {
+        var setHeight = function () {
+          var h = (window.visualViewport && window.visualViewport.height) || window.innerHeight;
+          document.documentElement.style.setProperty('--app-height', h + 'px');
+        };
+        setHeight();
+        if (window.visualViewport) {
+          window.visualViewport.addEventListener('resize', setHeight);
+          window.visualViewport.addEventListener('scroll', setHeight);
+        }
+        window.addEventListener('resize', setHeight);
+        window.addEventListener('orientationchange', setHeight);
+      })();
+    </script>
     <script type="module" src="/index.jsx"></script>
   </head>
   <body>
